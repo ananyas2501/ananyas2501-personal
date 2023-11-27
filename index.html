@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hidden Address Form</title>
+    <title>Address Form with Autocomplete</title>
     <style>
         .hidden {
             display: none;
@@ -17,6 +17,10 @@
     <form id="addressForm">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required><br><br>
+
+        <!-- Autocomplete input for address -->
+        <label for="autocomplete">Enter your address:</label>
+        <input type="text" id="autocomplete" placeholder="Enter your address" onFocus="initAutocomplete()" autocomplete="off" required><br><br>
 
         <!-- Hidden address fields -->
         <div id="addressFields" class="hidden">
@@ -39,10 +43,43 @@
         <input type="submit" value="Submit">
     </form>
 
+    <!-- Include the Google Places API script -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
+
     <script>
         function revealAddressFields() {
             var addressFields = document.getElementById('addressFields');
             addressFields.style.display = 'block';
+        }
+
+        function initAutocomplete() {
+            var input = document.getElementById('autocomplete');
+            var autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.setFields(['address_components', 'geometry']);
+
+            autocomplete.addListener('place_changed', function () {
+                var place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    window.alert("No details available for input: '" + place.name + "'");
+                    return;
+                }
+
+                // Fill in the address fields
+                document.getElementById('street').value = getComponentValue(place, 'route');
+                document.getElementById('city').value = getComponentValue(place, 'locality');
+                document.getElementById('state').value = getComponentValue(place, 'administrative_area_level_1');
+                document.getElementById('zip').value = getComponentValue(place, 'postal_code');
+            });
+        }
+
+        function getComponentValue(place, type) {
+            for (var i = 0; i < place.address_components.length; i++) {
+                var component = place.address_components[i];
+                if (component.types.indexOf(type) !== -1) {
+                    return component.long_name;
+                }
+            }
+            return '';
         }
     </script>
 
