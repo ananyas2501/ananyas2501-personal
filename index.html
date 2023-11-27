@@ -58,18 +58,26 @@
             autocomplete.setFields(['address_components', 'geometry']);
 
             autocomplete.addListener('place_changed', function () {
-                var place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    window.alert("No details available for input: '" + place.name + "'");
-                    return;
-                }
-
-                // Fill in the address fields
-                document.getElementById('street').value = getComponentValue(place, 'route');
-                document.getElementById('city').value = getComponentValue(place, 'locality');
-                document.getElementById('state').value = getComponentValue(place, 'administrative_area_level_1');
-                document.getElementById('zip').value = getComponentValue(place, 'postal_code');
+                fillAddressFields(autocomplete.getPlace());
             });
+
+            // Handle autofill events triggered by the browser
+            input.addEventListener('change', function () {
+                fillAddressFields(autocomplete.getPlace());
+            });
+        }
+
+        function fillAddressFields(place) {
+            if (!place.geometry) {
+                window.alert("No details available for input: '" + place.name + "'");
+                return;
+            }
+
+            // Fill in the address fields
+            document.getElementById('street').value = getComponentValue(place, 'route');
+            document.getElementById('city').value = getComponentValue(place, 'locality');
+            document.getElementById('state').value = getComponentValue(place, 'administrative_area_level_1');
+            document.getElementById('zip').value = getComponentValue(place, 'postal_code');
         }
 
         function getComponentValue(place, type) {
